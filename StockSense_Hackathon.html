@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StockSense | Intelligent Inventory Management</title>
+<style>
+:root{
+  --bg:#f4f7fb;--card:#fff;--text:#172033;--muted:#64748b;--line:#e5eaf1;
+  --primary:#4f46e5;--primary2:#06b6d4;--dark:#0f172a;--green:#16a34a;
+  --yellow:#d97706;--red:#dc2626;--blue:#2563eb;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+
+/* LOGIN */
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0f172a,#312e81,#0e7490);padding:20px}
+.login-card{width:min(430px,100%);background:#fff;border-radius:22px;padding:34px;box-shadow:0 25px 70px #0005}
+.brand{text-align:center;margin-bottom:25px}.brand-icon{font-size:44px}.brand h1{font-size:30px;margin:7px}.brand p{color:var(--muted);font-size:13px}
+.login-card label{display:block;font-size:13px;font-weight:700;margin:14px 0 7px}
+.login-card input{width:100%;padding:13px;border:1px solid #dbe1ea;border-radius:10px;outline:none}
+.login-card input:focus{border-color:var(--primary)}
+.primary{border:0;background:linear-gradient(135deg,var(--primary),#6366f1);color:#fff;border-radius:10px;padding:13px 18px;font-weight:700}
+.login-card .primary{width:100%;margin-top:20px}
+.demo{margin-top:15px;padding:11px;background:#f1f5f9;border-radius:9px;text-align:center;font-size:12px;color:#475569}
+.login-error{color:var(--red);font-size:13px;margin-top:10px;text-align:center}
+
+/* APP */
+#app{display:none}.sidebar{position:fixed;left:0;top:0;bottom:0;width:250px;background:#0f172a;color:#fff;padding:22px 15px;z-index:20}
+.logo{display:flex;gap:11px;align-items:center;padding:5px 10px 25px}.logoIcon{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--primary2));display:grid;place-items:center;font-size:22px}.logo h2{font-size:20px}.logo small{color:#94a3b8}
+.nav-title{font-size:10px;letter-spacing:1.2px;color:#64748b;margin:18px 10px 7px;text-transform:uppercase}
+.nav{width:100%;border:0;background:transparent;color:#cbd5e1;text-align:left;padding:11px 12px;border-radius:9px;margin:2px 0;font-size:13px}
+.nav:hover,.nav.active{background:#1e293b;color:#fff}.nav.active{border-left:3px solid #38bdf8}
+.main{margin-left:250px;padding:25px 30px;min-height:100vh}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.top h1{font-size:27px}.top p{color:var(--muted);font-size:13px;margin-top:4px}
+.user{display:flex;align-items:center;gap:9px;background:#fff;padding:7px 12px;border-radius:30px;box-shadow:0 3px 15px #0000000a;font-size:13px}.avatar{width:34px;height:34px;border-radius:50%;background:var(--primary);color:#fff;display:grid;place-items:center;font-weight:800}
+.page{display:none}.page.active{display:block}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:18px}.kpi,.card{background:#fff;border:1px solid var(--line);border-radius:15px;box-shadow:0 4px 18px #00000008}.kpi{padding:18px}.kpiHead{display:flex;justify-content:space-between;color:var(--muted);font-size:12px}.kpiIcon{width:39px;height:39px;border-radius:11px;background:#eef2ff;display:grid;place-items:center;font-size:19px}.kpi h2{font-size:26px;margin-top:10px}.kpi small{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:2fr 1fr;gap:18px}.card{padding:19px;margin-bottom:18px}.cardHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.cardHead h2{font-size:16px}.muted{color:var(--muted);font-size:12px}
+.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:15px}.toolbar input,.toolbar select{flex:1;min-width:160px}
+input,select{padding:11px 12px;border:1px solid #dbe1ea;border-radius:9px;background:#fff;outline:none;color:var(--text)}input:focus,select:focus{border-color:#6366f1;box-shadow:0 0 0 3px #6366f115}
+.tableWrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:650px}th{text-align:left;color:var(--muted);font-size:11px;padding:10px;border-bottom:1px solid var(--line);white-space:nowrap}td{padding:11px 10px;border-bottom:1px solid #f0f2f5;font-size:12px}tr:hover td{background:#fafbff}
+.badge{display:inline-block;padding:5px 8px;border-radius:20px;font-size:10px;font-weight:800}.green{background:#dcfce7;color:#15803d}.yellow{background:#fef3c7;color:#b45309}.red{background:#fee2e2;color:#b91c1c}.blue{background:#dbeafe;color:#1d4ed8}.purple{background:#ede9fe;color:#6d28d9}
+.alert{padding:12px;border-radius:10px;margin:8px 0;font-size:12px}.alert.red{background:#fff1f2;color:#be123c}.alert.yellow{background:#fffbeb;color:#a16207}.alert.green{background:#f0fdf4;color:#15803d}
+.formGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:15px}.field label{display:block;font-size:12px;font-weight:700;margin-bottom:6px}.field input,.field select{width:100%}.full{grid-column:1/-1}.actions{margin-top:18px;display:flex;gap:8px}.btn{border:0;border-radius:9px;padding:10px 15px;font-weight:700;font-size:12px}.btnPrimary{background:var(--primary);color:#fff}.btnGreen{background:var(--green);color:#fff}.btnRed{background:var(--red);color:#fff}.btnLight{background:#eef2f7;color:#334155}
+.statGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.stat{background:#f8fafc;border-radius:11px;padding:14px;font-size:11px;color:var(--muted)}.stat strong{display:block;color:var(--text);font-size:21px;margin-top:5px}
+.insight{padding:14px;border-radius:11px;background:#f8fafc;border-left:4px solid var(--primary);margin-bottom:10px}.insight h3{font-size:13px;margin-bottom:5px}.insight p{font-size:11px;color:var(--muted);line-height:1.5}.progress{height:7px;background:#e5e7eb;border-radius:10px;overflow:hidden;margin-top:8px}.bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2))}
+.toast{position:fixed;right:25px;bottom:25px;background:#111827;color:#fff;padding:13px 18px;border-radius:10px;display:none;z-index:99;font-size:13px}.toast.show{display:block}
+.empty{text-align:center;padding:25px;color:var(--muted);font-size:13px}
+@media(max-width:950px){.sidebar{width:72px}.logo h2,.logo small,.nav-title{display:none}.nav{text-align:center;font-size:0}.nav:first-letter{font-size:19px}.main{margin-left:72px}.kpis{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}
+@media(max-width:600px){.main{padding:16px}.top{align-items:flex-start}.user strong{display:none}.kpis,.formGrid,.statGrid{grid-template-columns:1fr}.full{grid-column:auto}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="brand">
+      <div class="brand-icon">📦</div>
+      <h1>StockSense</h1>
+      <p>Intelligent Inventory Management System</p>
+    </div>
+    <label>Email</label>
+    <input id="loginEmail" type="email" value="admin@stocksense.com" placeholder="Enter email">
+    <label>Password</label>
+    <input id="loginPassword" type="password" value="admin123" placeholder="Enter password">
+    <button class="primary" onclick="login()">Login to StockSense</button>
+    <div id="loginError" class="login-error"></div>
+    <div class="demo">Demo: admin@stocksense.com / admin123</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+<aside class="sidebar">
+  <div class="logo"><div class="logoIcon">📦</div><div><h2>StockSense</h2><small>SMART INVENTORY</small></div></div>
+  <div class="nav-title">Main</div>
+  <button class="nav active" onclick="go('dashboard',this)">🏠 Dashboard</button>
+  <button class="nav" onclick="go('products',this)">📦 Products</button>
+  <div class="nav-title">Operations</div>
+  <button class="nav" onclick="go('receipts',this)">📥 Receipts</button>
+  <button class="nav" onclick="go('deliveries',this)">📤 Deliveries</button>
+  <button class="nav" onclick="go('transfers',this)">🔄 Transfers</button>
+  <button class="nav" onclick="go('adjustments',this)">⚙️ Adjustments</button>
+  <button class="nav" onclick="go('ledger',this)">📜 Stock Ledger</button>
+  <div class="nav-title">Intelligence</div>
+  <button class="nav" onclick="go('insights',this)">🤖 Smart Insights</button>
+  <div class="nav-title">Account</div>
+  <button class="nav" onclick="logout()">🚪 Logout</button>
+</aside>
+
+<main class="main">
+  <div class="top">
+    <div><h1 id="heading">Dashboard</h1><p>Real-time inventory control & intelligent insights</p></div>
+    <div class="user"><div class="avatar">A</div><strong>Inventory Manager</strong></div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <section id="dashboard" class="page active">
+    <div class="kpis">
+      <div class="kpi"><div class="kpiHead">TOTAL STOCK <span class="kpiIcon">📦</span></div><h2 id="kTotal">0</h2><small>Units across all locations</small></div>
+      <div class="kpi"><div class="kpiHead">LOW STOCK <span class="kpiIcon">⚠️</span></div><h2 id="kLow">0</h2><small>Items below reorder level</small></div>
+      <div class="kpi"><div class="kpiHead">OUT OF STOCK <span class="kpiIcon">🔴</span></div><h2 id="kOut">0</h2><small>Immediate action required</small></div>
+      <div class="kpi"><div class="kpiHead">PENDING OPERATIONS <span class="kpiIcon">⏳</span></div><h2 id="kOps">0</h2><small>Recent inventory activity</small></div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="cardHead"><h2>📊 Inventory Overview</h2><span class="muted">Live data</span></div>
+        <div class="toolbar">
+          <input id="dashSearch" placeholder="🔎 Search product / SKU" oninput="renderDashboard()">
+          <select id="dashWarehouse" onchange="renderDashboard()"><option value="">All warehouses</option></select>
+          <select id="dashCategory" onchange="renderDashboard()"><option value="">All categories</option></select>
+        </div>
+        <div class="tableWrap"><table><thead><tr><th>PRODUCT</th><th>SKU</th><th>LOCATION</th><th>STOCK</th><th>STATUS</th></tr></thead><tbody id="dashTable"></tbody></table></div>
+      </div>
+      <div>
+        <div class="card"><div class="cardHead"><h2>🚨 Alerts</h2><span class="muted">Live</span></div><div id="alerts"></div></div>
+        <div class="card"><div class="cardHead"><h2>⚡ Quick Stats</h2></div><div class="statGrid"><div class="stat">Products<strong id="sProducts">0</strong></div><div class="stat">Warehouses<strong id="sWarehouses">0</strong></div><div class="stat">Ledger Entries<strong id="sLedger">0</strong></div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUCTS -->
+  <section id="products" class="page">
+    <div class="card">
+      <div class="cardHead"><h2>📦 Product Management</h2><button class="btn btnPrimary" onclick="toggle('productForm')">+ Add Product</button></div>
+      <div id="productForm" class="hidden">
+        <div class="formGrid">
+          <div class="field"><label>Product Name</label><input id="pName" placeholder="Steel Rods"></div>
+          <div class="field"><label>SKU / Code</label><input id="pSku" placeholder="STL001"></div>
+          <div class="field"><label>Category</label><input id="pCategory" placeholder="Raw Material"></div>
+          <div class="field"><label>Unit of Measure</label><select id="pUnit"><option>units</option><option>kg</option><option>litre</option><option>box</option><option>pieces</option></select></div>
+          <div class="field"><label>Initial Stock</label><input id="pInitial" type="number" min="0" value="0"></div>
+          <div class="field"><label>Reorder Level</label><input id="pReorder" type="number" min="0" value="20"></div>
+        </div>
+        <div class="actions"><button class="btn btnGreen" onclick="addProduct()">Create Product</button><button class="btn btnLight" onclick="toggle('productForm')">Cancel</button></div>
+      </div>
+      <div class="tableWrap"><table><thead><tr><th>PRODUCT</th><th>SKU</th><th>CATEGORY</th><th>UNIT</th><th>REORDER</th><th>TOTAL STOCK</th></tr></thead><tbody id="productTable"></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- RECEIPTS -->
+  <section id="receipts" class="page">
+    <div class="card">
+      <div class="cardHead"><h2>📥 Receipts — Incoming Stock</h2><span class="muted">Validate to increase stock</span></div>
+      <div class="formGrid">
+        <div class="field"><label>Product</label><select id="rProduct"></select></div>
+        <div class="field"><label>Warehouse</label><select id="rWarehouse"></select></div>
+        <div class="field"><label>Quantity Received</label><input id="rQty" type="number" min="1" value="10"></div>
+        <div class="field"><label>Supplier</label><input id="rSupplier" placeholder="ABC Suppliers"></div>
+      </div>
+      <div class="actions"><button class="btn btnGreen" onclick="receive()">✓ Validate Receipt</button></div>
+    </div>
+  </section>
+
+  <!-- DELIVERIES -->
+  <section id="deliveries" class="page">
+    <div class="card">
+      <div class="cardHead"><h2>📤 Delivery Orders</h2><span class="muted">Validate to decrease stock</span></div>
+      <div class="formGrid">
+        <div class="field"><label>Product</label><select id="dProduct"></select></div>
+        <div class="field"><label>Warehouse</label><select id="dWarehouse"></select></div>
+        <div class="field"><label>Quantity Delivered</label><input id="dQty" type="number" min="1" value="1"></div>
+        <div class="field"><label>Customer / Order ID</label><input id="dCustomer" placeholder="ORD-1001"></div>
+      </div>
+      <div class="actions"><button class="btn btnPrimary" onclick="deliver()">✓ Validate Delivery</button></div>
+    </div>
+  </section>
+
+  <!-- TRANSFERS -->
+  <section id="transfers" class="page">
+    <div class="card">
+      <div class="cardHead"><h2>🔄 Internal Transfers</h2><span class="muted">Move stock between locations</span></div>
+      <div class="formGrid">
+        <div class="field"><label>Product</label><select id="tProduct"></select></div>
+        <div class="field"><label>Quantity</label><input id="tQty" type="number" min="1" value="1"></div>
+        <div class="field"><label>From Warehouse</label><select id="tFrom"></select></div>
+        <div class="field"><label>To Warehouse</label><select id="tTo"></select></div>
+      </div>
+      <div class="actions"><button class="btn btnPrimary" onclick="transfer()">🔄 Transfer Stock</button></div>
+    </div>
+  </section>
+
+  <!-- ADJUSTMENTS -->
+  <section id="adjustments" class="page">
+    <div class="card">
+      <div class="cardHead"><h2>⚙️ Inventory Adjustment</h2><span class="muted">Match recorded stock with physical count</span></div>
+      <div class="formGrid">
+        <div class="field"><label>Product</label><select id="aProduct"></select></div>
+        <div class="field"><label>Warehouse</label><select id="aWarehouse"></select></div>
+        <div class="field"><label>Physical Count</label><input id="aCount" type="number" min="0" value="0"></div>
+        <div class="field"><label>Reason</label><input id="aReason" value="Physical stock verification"></div>
+      </div>
+      <div class="actions"><button class="btn btnPrimary" onclick="adjust()">✓ Apply Adjustment</button></div>
+    </div>
+  </section>
+
+  <!-- LEDGER -->
+  <section id="ledger" class="page">
+    <div class="card">
+      <div class="cardHead"><h2>📜 Stock Ledger</h2><button class="btn btnLight" onclick="exportCSV()">⬇ Export CSV</button></div>
+      <div class="toolbar"><input id="ledgerSearch" placeholder="🔎 Search product, warehouse or operation" oninput="renderLedger()"></div>
+      <div class="tableWrap"><table><thead><tr><th>TIME</th><th>PRODUCT</th><th>WAREHOUSE</th><th>OPERATION</th><th>QTY</th><th>REFERENCE</th><th>NOTE</th></tr></thead><tbody id="ledgerTable"></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- INSIGHTS -->
+  <section id="insights" class="page">
+    <div class="card">
+      <div class="cardHead"><h2>🤖 StockSense Intelligence</h2><span class="muted">Predictive stock analysis</span></div>
+      <div id="insightsBox"></div>
+    </div>
+    <div class="card">
+      <div class="cardHead"><h2>💡 Smart Reorder Recommendations</h2><span class="muted">Based on current stock & reorder levels</span></div>
+      <div class="tableWrap"><table><thead><tr><th>PRODUCT</th><th>WAREHOUSE</th><th>CURRENT</th><th>REORDER LEVEL</th><th>SUGGESTED ORDER</th></tr></thead><tbody id="recommendTable"></tbody></table></div>
+    </div>
+  </section>
+</main>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const KEY="stocksense_hackathon_v1";
+
+let state=JSON.parse(localStorage.getItem(KEY))||{
+ products:[
+  {id:1,name:"Steel Rods",sku:"STL001",category:"Raw Material",unit:"kg",reorder:30},
+  {id:2,name:"Office Chairs",sku:"CHR001",category:"Furniture",unit:"units",reorder:20},
+  {id:3,name:"Bolts",sku:"BLT001",category:"Hardware",unit:"units",reorder:50},
+  {id:4,name:"Laptop",sku:"LAP001",category:"Electronics",unit:"units",reorder:10},
+  {id:5,name:"Wood Panels",sku:"WOD001",category:"Raw Material",unit:"pieces",reorder:25}
+ ],
+ warehouses:[
+  {id:1,name:"Main Warehouse"},
+  {id:2,name:"Production Floor"},
+  {id:3,name:"Warehouse 2"}
+ ],
+ stock:{
+  "1-1":100,"1-2":60,"1-3":20,
+  "2-1":40,"2-2":25,"2-3":10,
+  "3-1":70,"3-2":30,"3-3":10,
+  "4-1":15,"4-2":5,"4-3":8,
+  "5-1":80,"5-2":30,"5-3":20
+ },
+ ledger:[]
+};
+
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function product(id){return state.products.find(x=>x.id==id)}
+function warehouse(id){return state.warehouses.find(x=>x.id==id)}
+function qty(pid,wid){return state.stock[pid+"-"+wid]||0}
+function setQty(pid,wid,n){state.stock[pid+"-"+wid]=Math.max(0,n)}
+function total(pid){return state.warehouses.reduce((s,w)=>s+qty(pid,w.id),0)}
+function toggle(id){document.getElementById(id).classList.toggle("hidden")}
+function toast(msg){const x=document.getElementById("toast");x.textContent=msg;x.classList.add("show");setTimeout(()=>x.classList.remove("show"),2500)}
+
+function login(){
+ const e=document.getElementById("loginEmail").value.trim();
+ const p=document.getElementById("loginPassword").value;
+ if(e==="admin@stocksense.com"&&p==="admin123"){
+  document.getElementById("loginScreen").style.display="none";
+  document.getElementById("app").style.display="block";
+  refresh();
+ }else document.getElementById("loginError").textContent="Invalid demo credentials.";
+}
+function logout(){location.reload()}
+
+function go(page,btn){
+ document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+ document.getElementById(page).classList.add("active");
+ document.querySelectorAll(".nav").forEach(x=>x.classList.remove("active"));
+ btn.classList.add("active");
+ const names={dashboard:"Dashboard",products:"Products",receipts:"Receipts",deliveries:"Delivery Orders",transfers:"Internal Transfers",adjustments:"Inventory Adjustments",ledger:"Stock Ledger",insights:"Smart Insights"};
+ document.getElementById("heading").textContent=names[page];
+ refresh();
+}
+
+function addLedger(pid,wid,op,q,note){
+ state.ledger.unshift({
+  time:new Date().toLocaleString(),
+  productId:pid,warehouseId:wid,operation:op,quantity:q,
+  ref:op.slice(0,3).toUpperCase()+"-"+Math.floor(1000+Math.random()*9000),note:note||""
+ });
+}
+
+function setOptions(id,items){
+ const s=document.getElementById(id); if(!s)return;
+ s.innerHTML=items.map(x=>`<option value="${x.id}">${x.name}</option>`).join("");
+}
+
+function populate(){
+ ["rProduct","dProduct","tProduct","aProduct"].forEach(id=>setOptions(id,state.products));
+ ["rWarehouse","dWarehouse","aWarehouse","tFrom","tTo"].forEach(id=>setOptions(id,state.warehouses));
+ const wf=document.getElementById("dashWarehouse");
+ const old=wf.value;
+ wf.innerHTML='<option value="">All warehouses</option>'+state.warehouses.map(w=>`<option value="${w.id}">${w.name}</option>`).join("");
+ wf.value=old;
+ const cats=[...new Set(state.products.map(p=>p.category))];
+ const cf=document.getElementById("dashCategory"),oldc=cf.value;
+ cf.innerHTML='<option value="">All categories</option>'+cats.map(c=>`<option>${c}</option>`).join("");
+ cf.value=oldc;
+}
+
+function renderDashboard(){
+ let search=(document.getElementById("dashSearch")?.value||"").toLowerCase();
+ let wf=document.getElementById("dashWarehouse")?.value||"";
+ let cf=document.getElementById("dashCategory")?.value||"";
+ let html="";
+ state.products.forEach(p=>state.warehouses.forEach(w=>{
+  let q=qty(p.id,w.id);
+  if(search&&!(`${p.name} ${p.sku}`.toLowerCase().includes(search)))return;
+  if(wf&&wf!=w.id)return;
+  if(cf&&cf!=p.category)return;
+  let st=q<=0?'<span class="badge red">Out of Stock</span>':q<=p.reorder?'<span class="badge yellow">Low Stock</span>':'<span class="badge green">Healthy</span>';
+  html+=`<tr><td><b>${p.name}</b></td><td>${p.sku}</td><td>${w.name}</td><td><b>${q}</b> ${p.unit}</td><td>${st}</td></tr>`;
+ }));
+ document.getElementById("dashTable").innerHTML=html||'<tr><td colspan="5" class="empty">No matching inventory.</td></tr>';
+}
+
+function renderAlerts(){
+ let html="",count=0;
+ state.products.forEach(p=>state.warehouses.forEach(w=>{
+  const q=qty(p.id,w.id);
+  if(q<=0){html+=`<div class="alert red">🔴 <b>${p.name}</b><br>Out of stock at ${w.name}</div>`;count++}
+  else if(q<=p.reorder){html+=`<div class="alert yellow">⚠️ <b>${p.name}</b><br>${q} ${p.unit} remaining at ${w.name}</div>`;count++}
+ }));
+ document.getElementById("alerts").innerHTML=html||'<div class="alert green">🟢 Inventory is healthy. No critical alerts.</div>';
+}
+
+function updateKpis(){
+ let totalStock=0,low=0,out=0;
+ state.products.forEach(p=>state.warehouses.forEach(w=>{
+  let q=qty(p.id,w.id);totalStock+=q;if(q<=0)out++;else if(q<=p.reorder)low++;
+ }));
+ document.getElementById("kTotal").textContent=totalStock.toLocaleString();
+ document.getElementById("kLow").textContent=low;
+ document.getElementById("kOut").textContent=out;
+ document.getElementById("kOps").textContent=state.ledger.length;
+ document.getElementById("sProducts").textContent=state.products.length;
+ document.getElementById("sWarehouses").textContent=state.warehouses.length;
+ document.getElementById("sLedger").textContent=state.ledger.length;
+}
+
+function renderProducts(){
+ let html=state.products.map(p=>{
+  const t=total(p.id);
+  return `<tr><td><b>${p.name}</b></td><td>${p.sku}</td><td>${p.category}</td><td>${p.unit}</td><td>${p.reorder}</td><td><b>${t}</b> ${t<=p.reorder?'<span class="badge yellow">Reorder</span>':'<span class="badge green">Healthy</span>'}</td></tr>`;
+ }).join("");
+ document.getElementById("productTable").innerHTML=html;
+}
+
+function addProduct(){
+ const name=document.getElementById("pName").value.trim(),sku=document.getElementById("pSku").value.trim();
+ if(!name||!sku){toast("⚠️ Name and SKU are required.");return}
+ if(state.products.some(p=>p.sku.toLowerCase()===sku.toLowerCase())){toast("⚠️ SKU already exists.");return}
+ const id=Date.now(),initial=+document.getElementById("pInitial").value||0;
+ state.products.push({id,name,sku,category:document.getElementById("pCategory").value||"General",unit:document.getElementById("pUnit").value,reorder:+document.getElementById("pReorder").value||0});
+ state.warehouses.forEach(w=>state.stock[id+"-"+w.id]=0);
+ if(initial){state.stock[id+"-1"]=initial;addLedger(id,1,"RECEIPT",initial,"Initial stock")}
+ save();document.getElementById("productForm").classList.add("hidden");refresh();toast("✅ Product created.");
+}
+
+function receive(){
+ const pid=+rProduct.value,wid=+rWarehouse.value,q=+rQty.value;
+ if(q<=0)return toast("⚠️ Enter a valid quantity.");
+ state.stock[pid+"-"+wid]=qty(pid,wid)+q;
+ addLedger(pid,wid,"RECEIPT",q,"Supplier: "+(rSupplier.value||"Unknown"));
+ save();refresh();toast(`✅ ${q} units received.`);
+}
+
+function deliver(){
+ const pid=+dProduct.value,wid=+dWarehouse.value,q=+dQty.value;
+ if(q<=0)return toast("⚠️ Enter a valid quantity.");
+ if(q>qty(pid,wid))return toast(`❌ Insufficient stock. Available: ${qty(pid,wid)}`);
+ setQty(pid,wid,qty(pid,wid)-q);
+ addLedger(pid,wid,"DELIVERY",-q,"Customer: "+(dCustomer.value||"Order"));
+ save();refresh();toast(`✅ ${q} units delivered.`);
+}
+
+function transfer(){
+ const pid=+tProduct.value,from=+tFrom.value,to=+tTo.value,q=+tQty.value;
+ if(from===to)return toast("⚠️ Source and destination must differ.");
+ if(q<=0)return toast("⚠️ Enter a valid quantity.");
+ if(q>qty(pid,from))return toast(`❌ Only ${qty(pid,from)} units available.`);
+ setQty(pid,from,qty(pid,from)-q);setQty(pid,to,qty(pid,to)+q);
+ addLedger(pid,from,"TRANSFER OUT",-q,"To "+warehouse(to).name);
+ addLedger(pid,to,"TRANSFER IN",q,"From "+warehouse(from).name);
+ save();refresh();toast(`🔄 ${q} units transferred.`);
+}
+
+function adjust(){
+ const pid=+aProduct.value,wid=+aWarehouse.value,count=+aCount.value;
+ const diff=count-qty(pid,wid);setQty(pid,wid,count);
+ addLedger(pid,wid,"ADJUSTMENT",diff,aReason.value||"Physical count");
+ save();refresh();toast(`✅ Adjustment applied: ${diff>=0?"+":""}${diff}.`);
+}
+
+function renderLedger(){
+ const search=(document.getElementById("ledgerSearch")?.value||"").toLowerCase();
+ const rows=state.ledger.filter(l=>{
+  const p=product(l.productId),w=warehouse(l.warehouseId);
+  return `${p?.name} ${w?.name} ${l.operation} ${l.note}`.toLowerCase().includes(search);
+ }).map(l=>{
+  const p=product(l.productId),w=warehouse(l.warehouseId);
+  const cls=l.quantity>0?"green":l.quantity<0?"red":"blue";
+  return `<tr><td>${l.time}</td><td><b>${p?.name}</b></td><td>${w?.name}</td><td><span class="badge purple">${l.operation}</span></td><td><span class="badge ${cls}">${l.quantity>0?"+":""}${l.quantity}</span></td><td>${l.ref}</td><td>${l.note}</td></tr>`;
+ }).join("");
+ document.getElementById("ledgerTable").innerHTML=rows||'<tr><td colspan="7" class="empty">No ledger entries yet.</td></tr>';
+}
+
+function renderInsights(){
+ let html="",rec="";
+ state.products.forEach(p=>{
+  let t=total(p.id);
+  let deliveries=state.ledger.filter(l=>l.productId===p.id&&l.operation==="DELIVERY"&&l.quantity<0);
+  let used=deliveries.reduce((s,l)=>s+Math.abs(l.quantity),0);
+  let daily=used/30,days=daily?t/daily:999;
+  let status=t<=0?"CRITICAL":days<=7?"STOCK-OUT RISK":t<=p.reorder?"REORDER REQUIRED":"HEALTHY";
+  let icon=status==="HEALTHY"?"🟢":status==="REORDER REQUIRED"?"🟠":"🔴";
+  let pct=Math.min(100,Math.max(4,(t/(p.reorder*4||1))*100));
+  html+=`<div class="insight"><h3>${icon} ${p.name} — ${status}</h3><p>Current stock: <b>${t}</b> ${p.unit} &nbsp; | &nbsp; Reorder level: <b>${p.reorder}</b>${days<999?` &nbsp; | &nbsp; Estimated stock coverage: <b>${days.toFixed(1)} days</b>`:""}</p><div class="progress"><div class="bar" style="width:${pct}%"></div></div></div>`;
+ });
+ state.products.forEach(p=>state.warehouses.forEach(w=>{
+  let q=qty(p.id,w.id);
+  if(q<=p.reorder){
+   let suggested=Math.max(p.reorder*2-q,0);
+   rec+=`<tr><td><b>${p.name}</b></td><td>${w.name}</td><td>${q}</td><td>${p.reorder}</td><td><span class="badge yellow">${suggested} ${p.unit}</span></td></tr>`;
+  }
+ }));
+ document.getElementById("insightsBox").innerHTML=html;
+ document.getElementById("recommendTable").innerHTML=rec||'<tr><td colspan="5" class="empty">🟢 No immediate reorder recommendations.</td></tr>';
+}
+
+function exportCSV(){
+ let csv="Time,Product,Warehouse,Operation,Quantity,Reference,Note\n";
+ state.ledger.forEach(l=>{
+  const p=product(l.productId),w=warehouse(l.warehouseId);
+  csv+=`"${l.time}","${p?.name}","${w?.name}","${l.operation}",${l.quantity},"${l.ref}","${l.note}"\n`;
+ });
+ const blob=new Blob([csv],{type:"text/csv"});
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="stocksense_ledger.csv";a.click();
+}
+
+function refresh(){
+ populate();updateKpis();renderDashboard();renderAlerts();renderProducts();renderLedger();renderInsights();
+}
+</script>
+</body>
+</html>
